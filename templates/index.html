@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edu Sphere — Interactive 3D AI Study Platform</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" defer></script>
+    <script src="{{ url_for('static', filename='script.js') }}" defer></script>
+</head>
+<body>
+    <!-- Fullscreen 3D WebGL Motion Graphic Backdrop -->
+    <canvas id="bg-3d-canvas"></canvas>
+
+    <!-- Floating HUD Bar -->
+    <nav class="hud-bar">
+        <div class="brand-badge">
+            <span class="pulse-dot"></span>
+            <span>EDU SPHERE</span>
+        </div>
+        <div class="hud-stats hidden" id="hud-stats">
+            <div class="stat-pill" id="streak-pill">🔥 Streak: <strong id="streak-count">0</strong></div>
+            <div class="stat-pill">Score: <strong id="live-score">0</strong>/<strong id="live-total">5</strong></div>
+        </div>
+    </nav>
+
+    <main class="stage-wrapper">
+        <!-- STAGE 1: Upload & Saved Quizzes -->
+        <section id="upload-stage" class="stage active">
+            <header class="hero-header">
+                <h1 class="neon-title">EDU SPHERE</h1>
+                <p class="hero-subtitle">Transform study documents into interactive 3D assessments with instant source verification.</p>
+            </header>
+
+            <div class="glass-card tilt-card" id="upload-card">
+                <div class="card-glare"></div>
+                <form id="upload-form">
+                    <label for="file-input" class="drop-zone" id="drop-zone">
+                        <div class="drop-icon-3d">📄</div>
+                        <p class="drop-title" id="file-label">Drop your PDF or TXT notes here, or click to browse</p>
+                        <span class="drop-hint">Powered by ChromaDB Vector Retrieval &amp; Gemini 2.5</span>
+                        <input type="file" id="file-input" name="document" accept=".pdf,.txt" required hidden>
+                    </label>
+
+                    <button type="submit" class="btn-3d primary" id="generate-btn">
+                        <span>Launch 3D Assessment</span>
+                    </button>
+                </form>
+
+                <!-- 3D Orbital Loader -->
+                <div class="loader-3d hidden" id="loader-box">
+                    <div class="orbit-spinner">
+                        <div class="ring ring-1"></div>
+                        <div class="ring ring-2"></div>
+                        <div class="ring ring-3"></div>
+                    </div>
+                    <p id="loader-text">Indexing chunks &amp; synthesizing questions...</p>
+                </div>
+
+                <div class="error-banner hidden" id="error-box"></div>
+            </div>
+
+            {% if saved_quizzes %}
+            <div class="glass-card tilt-card saved-card">
+                <div class="card-glare"></div>
+                <h2 class="section-heading">Recent Knowledge Decks</h2>
+                <div class="saved-grid">
+                    {% for item in saved_quizzes %}
+                    <button type="button" class="saved-chip" data-quiz-id="{{ item.id }}">
+                        <span class="chip-title">{{ item.doc_name }}</span>
+                        <span class="chip-action">Retake →</span>
+                    </button>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </section>
+
+        <!-- STAGE 2: Interactive 3D Question Deck -->
+        <section id="quiz-stage" class="stage hidden">
+            <div class="progress-nodes" id="progress-nodes"></div>
+
+            <div class="deck-perspective">
+                <div class="glass-card tilt-card question-card" id="question-card">
+                    <div class="card-glare"></div>
+                    <div class="q-meta">
+                        <span class="q-tag" id="q-counter">Question 1 of 5</span>
+                        <span class="q-doc" id="q-doc-name"></span>
+                    </div>
+
+                    <h2 class="q-text" id="q-text"></h2>
+
+                    <div class="options-grid" id="options-grid"></div>
+
+                    <!-- Instant Evaluation & Explanation Drawer -->
+                    <div class="feedback-drawer hidden" id="feedback-drawer">
+                        <div class="feedback-header">
+                            <span class="status-pill" id="status-pill"></span>
+                        </div>
+                        <p class="explanation-text" id="explanation-text"></p>
+                        <blockquote class="citation-quote" id="citation-quote"></blockquote>
+                    </div>
+
+                    <div class="card-footer">
+                        <button type="button" class="btn-3d next-btn hidden" id="next-btn">
+                            Next Question →
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- STAGE 3: 3D Score Celebration & Motivation -->
+        <section id="result-stage" class="stage hidden">
+            <div class="glass-card tilt-card result-card">
+                <div class="card-glare"></div>
+                <h2 class="result-heading">Assessment Complete</h2>
+
+                <div class="score-ring-wrap">
+                    <svg class="score-ring" viewBox="0 0 140 140">
+                        <circle class="ring-bg" cx="70" cy="70" r="58"></circle>
+                        <circle class="ring-fill" id="score-ring-fill" cx="70" cy="70" r="58"></circle>
+                    </svg>
+                    <div class="score-center">
+                        <span class="final-percent" id="final-percent">0%</span>
+                        <span class="final-fraction" id="final-fraction">0 / 5</span>
+                    </div>
+                </div>
+
+                <div class="motivation-panel" id="motivation-panel">
+                    <h3 id="motivation-title"></h3>
+                    <p id="motivation-quote"></p>
+                </div>
+
+                <div class="result-actions">
+                    <button type="button" class="btn-3d primary" id="retake-btn">Shuffle &amp; Retake</button>
+                    <button type="button" class="btn-3d secondary" id="new-doc-btn">Upload New Material</button>
+                </div>
+            </div>
+        </section>
+    </main>
+</body>
+</html>
